@@ -5,6 +5,7 @@ import {
   Calendar,
   Search,
   Download,
+  FileDown,
   ExternalLink,
   CheckCircle2,
   AlertTriangle,
@@ -14,6 +15,7 @@ import {
 import { DailyOperation, Driver } from '../../types';
 import { formatCurrency, formatPercentage } from '../../lib/calculations';
 import { storage } from '../../lib/storage';
+import { exportOperationsAndFinancialPdf } from '../../lib/pdfExport';
 
 interface PerformanceTableProps {
   operations: DailyOperation[];
@@ -82,13 +84,37 @@ export const PerformanceTable: React.FC<PerformanceTableProps> = ({
           </p>
         </div>
 
-        <button
-          onClick={exportCsv}
-          className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-700 px-3.5 py-2 text-xs font-semibold text-slate-200 transition-colors"
-        >
-          <Download className="h-4 w-4" />
-          <span>Exportar CSV</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              const financial = storage.getFinancialSettings();
+              const failures = storage.getFailures();
+              const settlements = storage.getSettlements();
+              exportOperationsAndFinancialPdf({
+                reportType: 'motoristas',
+                operations: filtered,
+                failures,
+                settlements,
+                drivers,
+                financialSettings: financial,
+                companyName: 'RotaMaster Logística & Transportes',
+                notes: `Relatório de Performance Operacional filtrado (${periodFilter.toUpperCase()}).`,
+              });
+            }}
+            className="flex items-center gap-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 px-3.5 py-2 text-xs font-bold text-slate-950 shadow transition-all active:scale-95"
+          >
+            <FileDown className="h-4 w-4" />
+            <span>Exportar PDF</span>
+          </button>
+
+          <button
+            onClick={exportCsv}
+            className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-700 px-3.5 py-2 text-xs font-semibold text-slate-200 transition-colors"
+          >
+            <Download className="h-4 w-4" />
+            <span>Exportar CSV</span>
+          </button>
+        </div>
       </div>
 
       {/* Barra de Filtros (Hoje, Ontem, Semana, Mês, Motorista, Rota) */}

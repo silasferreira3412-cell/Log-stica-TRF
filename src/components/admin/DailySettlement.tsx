@@ -10,11 +10,13 @@ import {
   AlertCircle,
   Truck,
   ShieldCheck,
-  ChevronRight
+  ChevronRight,
+  FileDown
 } from 'lucide-react';
 import { DailyOperation, DailySettlement as SettlementType } from '../../types';
 import { storage } from '../../lib/storage';
 import { formatCurrency, formatPercentage } from '../../lib/calculations';
+import { exportDriverSettlementPdf } from '../../lib/pdfExport';
 
 interface DailySettlementProps {
   operations: DailyOperation[];
@@ -283,48 +285,62 @@ export const DailySettlement: React.FC<DailySettlementProps> = ({
                   <th className="py-3.5 px-4 text-right">Receita</th>
                   <th className="py-3.5 px-4 text-right">Margem</th>
                   <th className="py-3.5 px-4 text-center">Status</th>
+                  <th className="py-3.5 px-4 text-right">Comprovante</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60 text-slate-200">
-                {settlements.map((s) => (
-                  <tr key={s.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="py-3.5 px-4">
-                      <div className="font-bold text-white">{s.driver_name}</div>
-                      <div className="text-[10px] text-slate-400 font-mono">
-                        {s.operation_code} • {s.applied_tier_label}
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-4 text-center font-mono text-slate-300">
-                      {s.settlement_date}
-                    </td>
-                    <td className="py-3.5 px-4 text-center font-mono font-bold text-slate-100">
-                      {s.packages_received}
-                    </td>
-                    <td className="py-3.5 px-4 text-center font-mono font-bold text-emerald-400">
-                      {s.successful_deliveries}
-                    </td>
-                    <td className="py-3.5 px-4 text-center font-mono font-bold text-cyan-300">
-                      {formatPercentage(s.final_performance)}
-                    </td>
-                    <td className="py-3.5 px-4 text-center font-mono font-bold text-amber-400">
-                      {formatCurrency(s.applied_rate_brl)}
-                    </td>
-                    <td className="py-3.5 px-4 text-right font-mono font-black text-amber-400">
-                      {formatCurrency(s.total_payout_brl)}
-                    </td>
-                    <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-200">
-                      {formatCurrency(s.total_revenue_brl)}
-                    </td>
-                    <td className="py-3.5 px-4 text-right font-mono font-bold text-emerald-400">
-                      {formatCurrency(s.gross_margin_brl)}
-                    </td>
-                    <td className="py-3.5 px-4 text-center">
-                      <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-400 border border-emerald-500/20">
-                        <Lock className="h-3 w-3" /> Travado
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                {settlements.map((s) => {
+                  const driver = storage.getDriverById(s.driver_id);
+                  return (
+                    <tr key={s.id} className="hover:bg-slate-800/40 transition-colors">
+                      <td className="py-3.5 px-4">
+                        <div className="font-bold text-white">{s.driver_name}</div>
+                        <div className="text-[10px] text-slate-400 font-mono">
+                          {s.operation_code} • {s.applied_tier_label}
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4 text-center font-mono text-slate-300">
+                        {s.settlement_date}
+                      </td>
+                      <td className="py-3.5 px-4 text-center font-mono font-bold text-slate-100">
+                        {s.packages_received}
+                      </td>
+                      <td className="py-3.5 px-4 text-center font-mono font-bold text-emerald-400">
+                        {s.successful_deliveries}
+                      </td>
+                      <td className="py-3.5 px-4 text-center font-mono font-bold text-cyan-300">
+                        {formatPercentage(s.final_performance)}
+                      </td>
+                      <td className="py-3.5 px-4 text-center font-mono font-bold text-amber-400">
+                        {formatCurrency(s.applied_rate_brl)}
+                      </td>
+                      <td className="py-3.5 px-4 text-right font-mono font-black text-amber-400">
+                        {formatCurrency(s.total_payout_brl)}
+                      </td>
+                      <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-200">
+                        {formatCurrency(s.total_revenue_brl)}
+                      </td>
+                      <td className="py-3.5 px-4 text-right font-mono font-bold text-emerald-400">
+                        {formatCurrency(s.gross_margin_brl)}
+                      </td>
+                      <td className="py-3.5 px-4 text-center">
+                        <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-400 border border-emerald-500/20">
+                          <Lock className="h-3 w-3" /> Travado
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-right">
+                        <button
+                          onClick={() => exportDriverSettlementPdf(s, driver)}
+                          className="inline-flex items-center gap-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 px-2.5 py-1 text-[11px] font-bold text-amber-300 transition-colors"
+                          title="Baixar comprovante de repasse em PDF para envio ao parceiro"
+                        >
+                          <FileDown className="h-3.5 w-3.5" />
+                          <span>Recibo PDF</span>
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
