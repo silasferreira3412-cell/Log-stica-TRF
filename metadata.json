@@ -1,0 +1,6 @@
+{
+  "name": "RotaMaster - Central de Operação Logística",
+  "description": "Sistema profissional de comando para transportadoras e entregas porta a porta com portal mobile do motorista, SLA, remuneração escalonada e fechamento financeiro.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
